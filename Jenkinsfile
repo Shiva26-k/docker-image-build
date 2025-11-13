@@ -1,3 +1,8 @@
+
+
+//  4) Create the Java artifact on the master node,
+//     then use a slave node to create the Docker image and push it to Docker Hub.
+
 pipeline {
     agent none
      environment {
@@ -8,12 +13,10 @@ pipeline {
         stage('Build Java Artifact') {
             agent any  // Run on the master node
             steps {
-                script {
-                    // Assuming a Maven project
-                    dir('/home/shivakumar76712/spring-petclinic') {  // Update to your project path
+                        checkout ms
                         sh 'mvn clean package' // Build the project
                         stash name: 'jar-file' , target: 'target/*.jar'
-                    }
+                    
                 }
             }
         }
