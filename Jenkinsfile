@@ -4,37 +4,41 @@
 //     then use a slave node to create the Docker image and push it to Docker Hub.
 
 pipeline {
-    agent any
-     environment {
-        DOCKERHUB_USERNAME = credentials('dockerhub_creds') // Jenkins credentials ID
-        DOCKERHUB_PASSWORD = credentials('dockerhub_creds') // Jenkins credentials ID
+    agent none
+    environment {
+        DOCKERHUB_USERNAME = credentials('dockerhub_creds')
+        DOCKERHUB_PASSWORD = credentials('dockerhub_creds')
     }
     stages {
         stage('Build Java Artifact') {
+            agent any
             steps {
-                        checkout ms
-                        sh 'mvn clean package' // Build the project
-                        stash name: 'jar-file' , target: 'target/*.jar'
+                script {
+                    dir('/home/shivakumar76712/spring-petclinic') {
+                        sh 'mvn clean package'
+                        // FIXED: Use 'includes' instead of 'target'
+                        stash name: 'jar-file', includes: 'target/*.jar'
+                    }
                 }
             }
         }
         stage('Build Docker Image') {
             agent { 
                 label 'java-slave'
-                }                     // Run on the slave node
+            }
             steps {
                 script {
-
-                    // unstash  the jar file
+                    // Unstash the jar file
                     unstash 'jar-file'
 
-                    // Copy  Dockerfile to the slave node
+                    // Copy Dockerfile to the slave node
                     sh '''
-                    cp  target/*.jar   home/shiva/jenkinshome/
-                    cp  /home/shivakumar76712/spring-petclinic/Dockerfile  /home/shiva/jenkinshome/
+                        cp /home/shivakumar76712/spring-petclinic/Dockerfile /home/shiva/jenkinshome/
+                        cp target/*.jar /home/shiva/jenkinshome/
                     '''
+                    
                     // Build the Docker image
-                    dir('/home/shiva/jenkinshome/') {  // Update to your destination path
+                    dir('/home/shiva/jenkinshome/') {
                         sh 'docker build -t shiva261/sprimg:v1 .'
                     }
                 }
@@ -42,19 +46,20 @@ pipeline {
         }
         stage('Push Docker Image') {
             agent { 
-                label 'java-slave'
-                }                    
+                label 'slave'
+            }
             steps {
                 script {
                     // Log in to Docker Hub
                     sh 'echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin'
                     
                     // Push the Docker image
-                    sh 'docker push  shiva261/sprimg:v1'
+                    sh 'docker push shiva261/sprimg:v1'
                 }
             }
         }
-   }
+    }
+}
 
     
 
