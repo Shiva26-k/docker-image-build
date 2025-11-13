@@ -1,5 +1,5 @@
 pipeline {
-     agent none
+    agent none
      environment {
         DOCKERHUB_USERNAME = credentials('dockerhub_creds') // Jenkins credentials ID
         DOCKERHUB_PASSWORD = credentials('dockerhub_creds') // Jenkins credentials ID
@@ -29,7 +29,7 @@ pipeline {
 
                     // Copy  Dockerfile to the slave node
                     sh '''
-                    cp  /home/shiva/target   home/shiva/jenkinshome/
+                    cp  target/*.jar   home/shiva/jenkinshome/
                     cp  /home/shivakumar76712/spring-petclinic/Dockerfile  /home/shiva/jenkinshome/
                     '''
                     // Build the Docker image
@@ -41,7 +41,7 @@ pipeline {
         }
         stage('Push Docker Image') {
             agent { 
-                label 'slave'
+                label 'java-slave'
                 }                    
             steps {
                 script {
@@ -56,4 +56,3 @@ pipeline {
     }
    
 }
-
