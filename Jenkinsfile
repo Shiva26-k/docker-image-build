@@ -4,19 +4,17 @@
 //     then use a slave node to create the Docker image and push it to Docker Hub.
 
 pipeline {
-    agent none
+    agent any
      environment {
         DOCKERHUB_USERNAME = credentials('dockerhub_creds') // Jenkins credentials ID
         DOCKERHUB_PASSWORD = credentials('dockerhub_creds') // Jenkins credentials ID
     }
     stages {
         stage('Build Java Artifact') {
-            agent any  // Run on the master node
             steps {
                         checkout ms
                         sh 'mvn clean package' // Build the project
                         stash name: 'jar-file' , target: 'target/*.jar'
-                    
                 }
             }
         }
@@ -56,4 +54,8 @@ pipeline {
                 }
             }
         }
-    }
+   }
+
+    
+
+   
